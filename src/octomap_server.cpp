@@ -127,8 +127,8 @@ OctomapServer::OctomapServer(const rclcpp::NodeOptions& options, const std::stri
   /* check parameters //{ */
 
   if (m_useHeightMap && m_useColoredMap) {
-    std::string msg = std::string("You enabled both height map and RGBcolor registration.") + " This is contradictory. " + "Defaulting to height map.";
-    RCLCPP_WARN(this->get_logger(), msg);
+    const std::string msg = std::string("You enabled both height map and RGBcolor registration.") + " This is contradictory. " + "Defaulting to height map.";
+    RCLCPP_WARN(this->get_logger(), "%s", msg.c_str());
     m_useColoredMap = false;
   }
 
@@ -136,24 +136,24 @@ OctomapServer::OctomapServer(const rclcpp::NodeOptions& options, const std::stri
 #ifdef COLOR_OCTOMAP_SERVER
     RCLCPP_WARN(this->get_logger(), "Using RGB color registration (if information available)");
 #else
-    std::string msg = std::string("Colored map requested in launch file") + " - node not running/compiled to support colors, " +
+    const std::string msg = std::string("Colored map requested in launch file") + " - node not running/compiled to support colors, " +
                       "please define COLOR_OCTOMAP_SERVER and recompile or launch " + "the octomap_color_server node";
-    RCLCPP_WARN(this->get_logger(), msg);
+    RCLCPP_WARN(this->get_logger(), "%s", msg.c_str());
 #endif
   }
 
   if (m_updateFreeSpaceUsingMissingData && m_maxRange < 0.0) {
-    std::string msg = std::string("You enabled updating free space using missing data in measurements. ") +
+    const std::string msg = std::string("You enabled updating free space using missing data in measurements. ") +
                       "However, the maximal sensor range is not limited. " + "Disabling this feature.";
-    RCLCPP_WARN(this->get_logger(), msg);
+    RCLCPP_WARN(this->get_logger(), "%s", msg.c_str());
     m_updateFreeSpaceUsingMissingData = false;
   }
 
   if (m_localMapping && m_localMapDistance < m_maxRange) {
-    std::string msg = std::string("You enabled using only the local map. ") +
+    const std::string msg = std::string("You enabled using only the local map. ") +
                       "However, the local distance for the map is lower than the maximal sensor range. " +
                       "Defaulting the local distance for the map to the maximal sensor range.";
-    RCLCPP_WARN(this->get_logger(), msg);
+    RCLCPP_WARN(this->get_logger(), "%s", msg.c_str());
     m_localMapDistance = m_maxRange;
   }
 
@@ -162,7 +162,7 @@ OctomapServer::OctomapServer(const rclcpp::NodeOptions& options, const std::stri
 
   if (!loaded_successfully) {
     const std::string str = "Could not load all non-optional parameters. Shutting down.";
-    RCLCPP_ERROR(this->get_logger(), str);
+    RCLCPP_ERROR(this->get_logger(), "%s", str.c_str());
     rclcpp::shutdown();
     return;
   }
@@ -946,7 +946,7 @@ bool OctomapServer::clearOutsideBBX(const octomap::point3d& p_min, const octomap
     m_octree->deleteNode(k.first, k.second);
   }
 
-  RCLCPP_INFO(this->get_logger(), "Number of voxels removed outside local area: %i", keys.size());
+  RCLCPP_INFO(this->get_logger(), "Number of voxels removed outside local area: %ld", keys.size());
   return true;
 }
 
@@ -1093,7 +1093,7 @@ void OctomapServer::handlePreNodeTraversal(const rclcpp::Time& rostime) {
       // test for max idx:
       auto max_idx = m_gridmap.info.width * mapUpdateBBXMaxY + mapUpdateBBXMaxX;
       if (max_idx >= m_gridmap.data.size()) {
-        RCLCPP_ERROR(this->get_logger(), std::string("BBX index not valid:") + "%d (max index %zu for size %d x %d) update-BBX is: " + "[%zu %zu]-[%zu %zu]",
+        RCLCPP_ERROR(this->get_logger(), "BBX index not valid: %d (max index %zu for size %d x %d) update-BBX is: [%u %u]-[%u %u]",
                      max_idx, m_gridmap.data.size(), m_gridmap.info.width, m_gridmap.info.height, mapUpdateBBXMinX, mapUpdateBBXMinY, mapUpdateBBXMaxX,
                      mapUpdateBBXMaxY);
       }
@@ -1313,7 +1313,7 @@ std_msgs::msg::ColorRGBA OctomapServer::heightMapColor(double h) {
 /* OctomapServer::parse_param() //{ */
 template <class T>
 bool OctomapServer::parse_param(const std::string& param_name, T& param_dest) {
-  this->declare_parameter(param_name);
+  this->declare_parameter<T>(param_name);
   if (!this->get_parameter(param_name, param_dest)) {
     RCLCPP_ERROR(this->get_logger(), "Could not load param '%s'", param_name.c_str());
     return false;
@@ -1322,15 +1322,6 @@ bool OctomapServer::parse_param(const std::string& param_name, T& param_dest) {
   }
   return true;
 }
-//}
-
-/* OctomapServer::parse_param impl //{ */
-template bool OctomapServer::parse_param<int>(const std::string& param_name, int& param_dest);
-template bool OctomapServer::parse_param<double>(const std::string& param_name, double& param_dest);
-template bool OctomapServer::parse_param<float>(const std::string& param_name, float& param_dest);
-template bool OctomapServer::parse_param<std::string>(const std::string& param_name, std::string& param_dest);
-template bool OctomapServer::parse_param<bool>(const std::string& param_name, bool& param_dest);
-template bool OctomapServer::parse_param<unsigned int>(const std::string& param_name, unsigned int& param_dest);
 //}
 
 }  // namespace octomap_server
