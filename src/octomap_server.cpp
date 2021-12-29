@@ -326,8 +326,8 @@ void OctomapServer::insertLaserScanCallback(const sensor_msgs::msg::LaserScan::C
     return;
   }
 
-  PCLPointCloud::Ptr pc              = boost::make_shared<PCLPointCloud>();
-  PCLPointCloud::Ptr free_vectors_pc = boost::make_shared<PCLPointCloud>();
+  PCLPointCloud::Ptr pc              = std::make_shared<PCLPointCloud>();
+  PCLPointCloud::Ptr free_vectors_pc = std::make_shared<PCLPointCloud>();
 
   Eigen::Matrix4f                      sensorToWorld;
   geometry_msgs::msg::TransformStamped sensorToWorldTf;
@@ -392,8 +392,8 @@ void OctomapServer::insertCloudCallback(const sensor_msgs::msg::PointCloud2::Con
     return;
   }
 
-  PCLPointCloud::Ptr pc              = boost::make_shared<PCLPointCloud>();
-  PCLPointCloud::Ptr free_vectors_pc = boost::make_shared<PCLPointCloud>();
+  PCLPointCloud::Ptr pc              = std::make_shared<PCLPointCloud>();
+  PCLPointCloud::Ptr free_vectors_pc = std::make_shared<PCLPointCloud>();
   pcl::fromROSMsg(*cloud, *pc);
 
   Eigen::Matrix4f                      sensorToWorld;

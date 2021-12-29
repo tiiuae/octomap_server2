@@ -15,10 +15,10 @@ USER builder
 
 RUN if [ -e /$PACKAGE_NAME/deps_ws ]; then \
         . /$PACKAGE_NAME/deps_ws/install/setup.sh && \
-        colcon build; \
+        colcon build --event-handlers console_direct+; \
     elif [ -e /opt/ros/${ROS_DISTRO}/setup.sh ]; then \
         . /opt/ros/${ROS_DISTRO}/setup.sh && \
-        colcon build; \
+        colcon build --event-handlers console_direct+; \
     fi 
 
 RUN sed --in-place \

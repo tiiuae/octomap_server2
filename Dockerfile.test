@@ -17,6 +17,7 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
     libboost-dev \
     && rm -rf /var/lib/apt/lists/*
 
+
 RUN groupadd -g $GID builder && \
     useradd -m -u $UID -g $GID -g builder builder && \
     usermod -aG sudo builder && \
@@ -29,53 +30,42 @@ RUN mkdir -p /$PACKAGE_NAME/packaging
 # Workaround for rosdep issue with libpcl-dev install
 RUN apt-get update -y && apt-get install -y --no-install-recommends \
     libflann-dev \
-    libusb-1.0-0-dev \
-    ros-${ROS_DISTRO}-pcl-msgs \
-    ros-${ROS_DISTRO}-message-filters \
     libboost-filesystem-dev \
     libboost-date-time-dev \
     libboost-iostreams-dev \
-    ros-foxy-octomap \
-    ros-foxy-octomap-msgs \
-    ros-foxy-dynamic-edt-3d \
-    ros-foxy-laser-geometry \
+    libusb-1.0-0-dev \
     ros-foxy-pcl-msgs \
-    ros-foxy-fog-msgs \
     && rm -rf /var/lib/apt/lists/*
+
 # build pcl
 RUN mkdir -p /$PACKAGE_NAME/pcl
 COPY build_pcl.sh /$PACKAGE_NAME/pcl/
 RUN cd /$PACKAGE_NAME \
-    && curl -fsSL https://github.com/PointCloudLibrary/pcl/releases/download/pcl-1.12.1/source.tar.gz -o pcl.tar.gz \
-    && tar xzvf pcl.tar.gz \
-    && cd pcl \
-    && ./build_pcl.sh \
-    && cd .. && rm -Rf pcl.tar.gz pcl
-
-#    && sed -i 's/using std::shared_ptr/using boost::shared_ptr/g' common/include/pcl/memory.h
-#    && sed -i 's/using std::weak_ptr/using boost::weak_ptr/g' common/include/pcl/memory.h
+    && curl -fsSL https://github.com/PointCloudLibrary/pcl/releases/download/pcl-1.12.1/source.tar.gz -o source.tar.gz \
+    && tar xzvf source.tar.gz \
+    && cd pcl && ./build_pcl.sh
 
 # build pcl-conversions
 RUN curl -fsSL https://github.com/ros-perception/perception_pcl/archive/refs/tags/2.2.1.tar.gz -o perception_pcl.tar.gz \
     && tar xzvf perception_pcl.tar.gz \
     && cd perception_pcl-2.2.1/pcl_conversions \
-    && sed -i '/<depend>libpcl-all-dev/d' package.xml \
-    && . /opt/ros/${ROS_DISTRO}/setup.sh \
-    && rosdep update \
-    && bloom-generate rosdebian --os-name ubuntu --os-version focal --ros-distro ${ROS_DISTRO} \
-    && fakeroot debian/rules binary \
-    && dpkg -i ../ros-${ROS_DISTRO}-pcl-conversions*.deb \
-    && cd ../.. && rm -Rf perception_plc.tar.gz perception_pcl-2.2.1
+    && mkdir -p build && cd build \
+    && . /opt/ros/foxy/setup.sh \
+    && cmake .. && make -j$(nproc) install
 
 COPY packaging/rosdep.yaml* packaging/rosdep.sh packaging/build_deps.sh /$PACKAGE_NAME/packaging/
 COPY underlay.repos package.xml /$PACKAGE_NAME/packaging/
 COPY entrypoint.sh* /$PACKAGE_NAME/
 
+#RUN /$PACKAGE_NAME/packaging/rosdep.sh /$PACKAGE_NAME
+
 RUN chown -R builder:builder /$PACKAGE_NAME
 
 USER builder
 
-RUN rosdep update
+#RUN rosdep update
+
+#RUN /$PACKAGE_NAME/packaging/build_deps.sh /$PACKAGE_NAME
 
 VOLUME /$PACKAGE_NAME/sources
 WORKDIR /$PACKAGE_NAME/sources
