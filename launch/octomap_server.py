@@ -73,7 +73,7 @@ def generate_launch_description():
                 ],
                 parameters=[
                     pkg_share_path + '/config/params.yaml',
-                    {"frame_id": "world"},
+                    {"frame_id": DRONE_DEVICE_ID + "/local_origin"},
                     {"use_sim_time": launch.substitutions.LaunchConfiguration("use_sim_time")},
                 ],
             ),
