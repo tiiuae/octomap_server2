@@ -1,4 +1,4 @@
-FROM ghcr.io/tiiuae/fog-ros-baseimage:builder-latest AS builder
+FROM ghcr.io/tiiuae/fog-ros-baseimage:builder-DP-2016-dockerfiles-pkcs-11-updates AS builder
 
 # TODO: use the same libvtk7-qt-dev-hack_1.0_all.deb hack here to make build faster
 #       (currently fails build, don't know the reason)
@@ -19,7 +19,7 @@ RUN SKIP_BUILD_UNDERLAY_STEPS=true /packaging/build.sh
 #  ▲               runtime ──┐
 #  └── build                 ▼
 
-FROM ghcr.io/tiiuae/fog-ros-baseimage:stable
+FROM ghcr.io/tiiuae/fog-ros-baseimage:DP-2016-dockerfiles-pkcs-11-updates
 
 ENTRYPOINT /entrypoint.sh
 
