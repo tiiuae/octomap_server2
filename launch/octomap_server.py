@@ -56,7 +56,7 @@ def generate_launch_description():
                 remappings=[
                     # subscribers
                     # ('cloud_in', 'rplidar/cloud'),
-                    ('laser_scan_in', 'rplidar/scan'),
+                    ('laser_scan_in', 'rplidar/scan_filtered'),
                     # publishers
                     ('octomap_binary_out', '~/octomap_binary'),
                     ('octomap_full_out', '~/octomap_full'),
