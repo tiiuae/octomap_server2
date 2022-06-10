@@ -8,10 +8,10 @@ sensor_model:
   min_range: 0.4
   hit: 0.9
   miss: 0.4
-  min: 0.3
-  max: 0.9
+  min: 0.4
+  max: 0.93
 
-filter_speckles: false
+filter_speckles: true
 ground_filter:
   enable: true
   distance: 0.6
