@@ -946,7 +946,7 @@ bool OctomapServer::clearOutsideBBX(const octomap::point3d& p_min, const octomap
     m_octree->deleteNode(k.first, k.second);
   }
 
-  RCLCPP_INFO(this->get_logger(), "Number of voxels removed outside local area: %li", keys.size());
+  RCLCPP_DEBUG(this->get_logger(), "Number of voxels removed outside local area: %li", keys.size());
   return true;
 }
 
