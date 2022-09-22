@@ -42,7 +42,7 @@ def generate_launch_description():
                 plugin='octomap_server::OctomapServer',
                 remappings=[
                     # subscribers
-                    ('laser_scan_in', '/' + str(DRONE_DEVICE_ID) + '/rplidar/scan'),
+                    ('laser_scan_in', '/' + str(DRONE_DEVICE_ID) + '/rplidar/scan_filtered'),
                     
                     # publishers
                     ('octomap_global_binary_out', '~/octomap/global/binary'),
