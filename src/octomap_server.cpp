@@ -144,6 +144,8 @@ OctomapServer::OctomapServer(rclcpp::NodeOptions options) : Node("octomap_server
 
 void OctomapServer::callbackLaserScan(const sensor_msgs::msg::LaserScan::UniquePtr msg) {
 
+  RCLCPP_INFO(get_logger(), "[OctomapServer]: callbackLaserScan time %f", msg->scan_time);
+
   if (!is_initialized_) {
     return;
   }
