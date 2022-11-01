@@ -18,6 +18,19 @@ def generate_launch_description():
 
     DRONE_DEVICE_ID=os.getenv('DRONE_DEVICE_ID')
 
+    # RPLIDAR_TOPIC = <raw | filtered>
+    rplidar_topic_name = "raw"
+    RPLIDAR_TOPIC = os.getenv('RPLIDAR_TOPIC')
+    if not RPLIDAR_TOPIC or RPLIDAR_TOPIC == "raw":
+        rplidar_topic_name = "/" + DRONE_DEVICE_ID + "/rplidar/scan"
+        print('RPLIDAR: using raw scan.')
+    elif RPLIDAR_TOPIC  == "filtered":
+        rplidar_topic_name = "/" + DRONE_DEVICE_ID + "/rplidar/scan_filtered"
+        print('RPLIDAR: using filtered scan.')
+    else:
+        print('ERROR: not valid RPLIDAR_TOPIC.')
+        sys.exit(1)
+
     ld.add_action(launch.actions.DeclareLaunchArgument("debug", default_value="false"))
     ld.add_action(launch.actions.DeclareLaunchArgument("use_sim_time", default_value="false"))
     ld.add_action(launch.actions.DeclareLaunchArgument("world_frame_id", default_value="world"))
@@ -42,7 +55,7 @@ def generate_launch_description():
                 plugin='octomap_server::OctomapServer',
                 remappings=[
                     # subscribers
-                    ('laser_scan_in', '/' + str(DRONE_DEVICE_ID) + '/rplidar/scan'),
+                    ('laser_scan_in', rplidar_topic_name),
                     
                     # publishers
                     ('octomap_global_binary_out', '~/octomap/global/binary'),
