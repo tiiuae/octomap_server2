@@ -1,4 +1,4 @@
-FROM ghcr.io/tiiuae/fog-ros-baseimage:builder-7072ebc AS builder
+FROM ghcr.io/tiiuae/fog-ros-baseimage-builder:v2.0.0 AS builder
 
 # TODO: use the same libvtk7-qt-dev-hack_1.0_all.deb hack here to make build faster
 #       (currently fails build, don't know the reason)
@@ -19,17 +19,17 @@ RUN SKIP_BUILD_UNDERLAY_STEPS=true /packaging/build.sh
 #  ▲               runtime ──┐
 #  └── build                 ▼
 
-FROM ghcr.io/tiiuae/fog-ros-baseimage:sha-7072ebc
+FROM ghcr.io/tiiuae/fog-ros-baseimage:v2.0.0
 
 ENTRYPOINT /entrypoint.sh
 
 COPY entrypoint.sh /entrypoint.sh
 
-COPY misc/libvtk7-qt-dev-hack_1.0_all.deb /tmp/libvtk7-qt-dev-hack_1.0_all.deb
+COPY misc/libvtk9-qt-dev-hack_1.0_all.deb /tmp/libvtk9-qt-dev-hack_1.0_all.deb
 
 # prevent libpcl-dev from pulling in a full graphical environment.
 # produced with these instructions: https://askubuntu.com/a/656153
-RUN dpkg -i /tmp/libvtk7-qt-dev-hack_1.0_all.deb
+RUN dpkg -i /tmp/libvtk9-qt-dev-hack_1.0_all.deb
 
 COPY --from=builder /main_ws/ros-*-octomap-server2_*_amd64.deb /octomap-server.deb
 
