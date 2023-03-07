@@ -1,4 +1,4 @@
-name: tii-octomap-server2
+name: tii-octomap-server2-coverity
 
 on:
   repository_dispatch:
@@ -22,6 +22,10 @@ jobs:
           push: false
           tags: coverity-scan-image:latest
           file: Dockerfile.coverity
+      - name: Run coverity scan
+        uses: addnab/docker-run-action@v3
+        with:
+          image: coverity-scan-image:latest
       - name: Collect docker logs on failure
         if: failure()
         uses: jwalton/gh-docker-logs@v2
