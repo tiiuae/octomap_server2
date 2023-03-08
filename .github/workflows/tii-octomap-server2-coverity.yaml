@@ -15,28 +15,14 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/setup-buildx-action@v2
       - name: Build coverity scan image
         uses: docker/build-push-action@v4
         with:
           context: .
           push: false
-          tags: coverity-scan-image:latest
+          tags: coverity-scan-image-self-hosted:latest
           file: Dockerfile.coverity
       - name: Run coverity scan
-        uses: addnab/docker-run-action@v3
-        with:
-          image: coverity-scan-image:latest
-      - name: Collect docker logs on failure
-        if: failure()
-        uses: jwalton/gh-docker-logs@v2
-        with:
-          dest: './logs'
-      - name: Tar logs
-        if: failure()
-        run: tar cvzf ./logs.tgz ./logs
-      - name: Upload logs to GitHub
-        if: failure()
-        uses: actions/upload-artifact@master
-        with:
-          name: logs.tgz
-          path: ./logs.tgz
+        run:
+          docker run coverity-scan-image-self-hosted:latest
