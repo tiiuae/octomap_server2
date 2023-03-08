@@ -3,6 +3,8 @@ name: tii-octomap-server2-coverity
 on:
   repository_dispatch:
   push:
+    branches:
+      - master
 
 jobs:
   coverity:
