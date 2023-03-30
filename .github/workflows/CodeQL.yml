@@ -20,6 +20,10 @@ jobs:
     # Specify the container in which actions will run
     container:
       image: ghcr.io/tiiuae/fog-ros-baseimage-builder-coverity:main
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
 
     steps:
       - name: Checkout repository
