@@ -8,7 +8,6 @@ jobs:
     runs-on: codeql_test
 
     name: Analyze
-    runs-on: ubuntu-latest
     permissions:
       security-events: write
       actions: read
