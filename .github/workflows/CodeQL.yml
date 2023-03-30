@@ -8,9 +8,6 @@ jobs:
     runs-on: codeql_test
 
     name: Analyze
-    permissions:
-      security-events: write
-      actions: read
 
     strategy:
       fail-fast: false
