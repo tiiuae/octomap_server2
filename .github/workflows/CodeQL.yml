@@ -5,6 +5,8 @@ on:
 
 jobs:
   analyze:
+    runs-on: codeql_test
+
     name: Analyze
     runs-on: ubuntu-latest
     permissions:
