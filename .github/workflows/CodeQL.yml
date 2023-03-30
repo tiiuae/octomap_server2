@@ -32,6 +32,7 @@ jobs:
       - name: Build
         run: |
           cp -r . /main_ws/src/
+          git config --global --add safe.directory '*'
           SKIP_BUILD_UNDERLAY_STEPS=true /packaging/build.sh
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2
