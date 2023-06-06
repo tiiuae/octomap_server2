@@ -1,38 +1,30 @@
-FROM ghcr.io/tiiuae/fog-ros-baseimage-builder:v2.1.0 AS builder
+FROM ghcr.io/tiiuae/fog-ros-baseimage-builder:sha-c549c2f AS builder
 
-# TODO: use the same libvtk7-qt-dev-hack_1.0_all.deb hack here to make build faster
-#       (currently fails build, don't know the reason)
+COPY . $SRC_DIR/octomap_server2
 
-# Workaround for rosdep issue with libpcl-dev install
-RUN apt-get update -y && apt-get install -y --no-install-recommends \
-    libpcl-dev
+RUN apt update && \
+    apt install -y octomap-staticdev
 
-COPY . /main_ws/src/
-
-# this:
-# 1) builds the application
-# 2) packages the application as .deb & writes it to /main_ws/
-#
-# SKIP_BUILD_UNDERLAY_STEPS because otherwise build fails for some reason
-RUN SKIP_BUILD_UNDERLAY_STEPS=true /packaging/build.sh
+RUN /packaging/build_colcon.sh
 
 #  ▲               runtime ──┐
 #  └── build                 ▼
 
-FROM ghcr.io/tiiuae/fog-ros-baseimage:v2.1.0
+FROM ghcr.io/tiiuae/fog-ros-baseimage:sha-c549c2f
 
-ENTRYPOINT /entrypoint.sh
+RUN apt update && \
+    apt install -y octomap-staticdev \
+    pcl-ros \
+    pcl-conversions \
+    pcl-msgs \
+    octomap-ros \
+    octomap-msgs \
+    laser-geometry \
+    rosidl-generator-py \
+    rosidl-generator-c \
+    boost
 
+ENTRYPOINT [ "/entrypoint.sh" ]
 COPY entrypoint.sh /entrypoint.sh
 
-COPY misc/libvtk9-qt-dev-hack_1.0_all.deb /tmp/libvtk9-qt-dev-hack_1.0_all.deb
-
-# prevent libpcl-dev from pulling in a full graphical environment.
-# produced with these instructions: https://askubuntu.com/a/656153
-RUN dpkg -i /tmp/libvtk9-qt-dev-hack_1.0_all.deb
-
-COPY --from=builder /main_ws/ros-*-octomap-server2_*_amd64.deb /octomap-server.deb
-
-RUN apt update && apt install -y --no-install-recommends ./octomap-server.deb \
-	&& rm /octomap-server.deb
-
+COPY --from=builder $INSTALL_DIR $INSTALL_DIR

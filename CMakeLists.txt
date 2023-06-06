@@ -15,6 +15,8 @@ add_definitions("-DOCTOMAP_NODEBUGOUT")
 # remove warning info from PCL
 set(PCL_FIND_QUIETLY INTERNAL)
 
+set(FPHSA_NAME_MISMATCHED 1) # Suppress warnings, see https://cmake.org/cmake/help/v3.17/module/FindPackageHandleStandardArgs.html
+
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 
@@ -26,8 +28,9 @@ find_package(nav_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
-find_package(pcl_ros REQUIRED)
-find_package(pcl_conversions REQUIRED)
+# find_package(pcl_ros REQUIRED)
+find_package(pcl_msgs REQUIRED)
+# find_package(pcl_conversions REQUIRED)
 find_package(message_filters REQUIRED)
 find_package(octomap REQUIRED)
 find_package(octomap_ros REQUIRED)
@@ -60,8 +63,9 @@ ament_target_dependencies(octomap_server2
   rclcpp
   rclcpp_components
   PCL
-  pcl_ros
-  pcl_conversions
+  # pcl_ros
+  pcl_msgs
+  # pcl_conversions
   sensor_msgs
   std_msgs
   nav_msgs
