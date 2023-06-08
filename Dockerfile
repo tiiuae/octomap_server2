@@ -1,4 +1,4 @@
-FROM ghcr.io/tiiuae/fog-ros-baseimage-builder:sha-c549c2f AS builder
+FROM ghcr.io/tiiuae/fog-ros-baseimage-builder:sha-62e6243 AS builder
 
 COPY . $SRC_DIR/octomap_server2
 
@@ -10,7 +10,7 @@ RUN /packaging/build_colcon.sh
 #  ▲               runtime ──┐
 #  └── build                 ▼
 
-FROM ghcr.io/tiiuae/fog-ros-baseimage:sha-c549c2f
+FROM ghcr.io/tiiuae/fog-ros-baseimage:sha-62e6243
 
 RUN apt update && \
     apt install -y octomap-staticdev \
@@ -20,8 +20,6 @@ RUN apt update && \
     octomap-ros \
     octomap-msgs \
     laser-geometry \
-    rosidl-generator-py \
-    rosidl-generator-c \
     boost
 
 ENTRYPOINT [ "/entrypoint.sh" ]

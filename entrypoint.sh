@@ -1,6 +1,4 @@
 #!/bin/bash -e
-source /usr/bin/ros_setup.bash
-source /main_ws/install/setup.bash
 _term() {
 	# FILL UP PROCESS SEARCH PATTERN HERE TO FIND PROPER PROCESS FOR SIGINT:
 	pattern="component_container_mt"
@@ -23,7 +21,7 @@ if [[ ${SIMULATION+x} != "" ]]; then
 	ROS_FLAGS="use_sim_time:=true ${ROS_FLAGS}"
 fi
 
-ros-with-env ros2 launch octomap_server2 octomap_server_launch.py ${ROS_FLAGS} &
+ros-with-env ros2 launch octomap_server2 octomap_server.py ${ROS_FLAGS} &
 child=$!
 
 echo "Waiting for pid $child"
