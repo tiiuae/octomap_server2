@@ -5,6 +5,10 @@ on:
     types: [fog-ros-baseimage-update]
   push:
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   tii-octomap-server2:
     runs-on: ubuntu-latest
