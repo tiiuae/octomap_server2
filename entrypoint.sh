@@ -1,10 +1,9 @@
 #!/bin/bash -e
-
 _term() {
 	# FILL UP PROCESS SEARCH PATTERN HERE TO FIND PROPER PROCESS FOR SIGINT:
 	pattern="component_container_mt"
 
-	pid_value="$(ps -ax | grep $pattern | grep -v grep | awk '{ print $1 }')"
+	pid_value="$(ps -e | grep $pattern | grep -v grep | awk '{ print $1 }')"
 	if [ "$pid_value" != "" ]; then
 		pid=$pid_value
 		echo "Send SIGINT to pid $pid"

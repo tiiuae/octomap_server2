@@ -48,7 +48,11 @@
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Geometry>
 
-#include <pcl_ros/transforms.hpp>
+// #include <pcl_ros/transforms.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <tf2_ros/buffer.h>
+#include <tf2_ros/transform_listener.h>
+#include <pcl_msgs/msg/point_indices.hpp>
 #include <pcl/point_types.h>
 #include <pcl/conversions.h>
 #include <pcl/io/pcd_io.h>
@@ -153,6 +157,18 @@ private:
   rclcpp::TimerBase::SharedPtr timer_local_map_resizer_;
   void       timerLocalMapResizer();
 
+  /** \brief Obtain the transformation matrix from TF into an Eigen form
+    * \param bt the TF transformation
+    * \param out_mat the Eigen transformation
+    */
+  void transformAsMatrix(const tf2::Transform & bt, Eigen::Matrix4f & out_mat);
+
+  /** \brief Obtain the transformation matrix from TF into an Eigen form
+    * \param bt the TF transformation
+    * \param out_mat the Eigen transformation
+    */
+  void transformAsMatrix(const geometry_msgs::msg::TransformStamped & bt, Eigen::Matrix4f & out_mat);
+
   // | ----------------------- parameters ----------------------- |
 
   std::atomic<bool> is_initialized_     = false;
@@ -238,7 +254,7 @@ private:
   bool createLocalMap(const std::string frame_id, const double horizontal_distance, const double vertical_distance, std::shared_ptr<OcTree_t>& octree);
 
   virtual void insertPointCloud(const geometry_msgs::msg::Vector3& robotOrigin, const geometry_msgs::msg::Vector3& sensorOrigin, 
-                                const PCLPointCloud::ConstPtr& cloud, const PCLPointCloud::ConstPtr& free_cloud);
+                                const std::shared_ptr<const PCLPointCloud>& cloud, const std::shared_ptr<const PCLPointCloud>& free_cloud);
 
   // sensor model
   double _probHit_;

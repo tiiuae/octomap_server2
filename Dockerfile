@@ -1,38 +1,46 @@
-FROM ghcr.io/tiiuae/fog-ros-baseimage-builder:v2.1.0 AS builder
+# Given dynamically from CI job.
+FROM --platform=${BUILDPLATFORM:-linux/amd64} ghcr.io/tiiuae/fog-ros-sdk:v3.0.1-${TARGETARCH:-amd64} AS builder
 
-# TODO: use the same libvtk7-qt-dev-hack_1.0_all.deb hack here to make build faster
-#       (currently fails build, don't know the reason)
+# Must be defined another time after "FROM" keyword.
+ARG TARGETARCH
 
-# Workaround for rosdep issue with libpcl-dev install
-RUN apt-get update -y && apt-get install -y --no-install-recommends \
-    libpcl-dev
+# SRC_DIR environment variable is defined in the fog-ros-sdk image.
+# The same workspace path is used by all ROS2 components.
+# See: https://github.com/tiiuae/fog-ros-baseimage/blob/main/Dockerfile.sdk_builder
+COPY . $SRC_DIR/octomap_server2
 
-COPY . /main_ws/src/
+RUN /packaging/build_colcon_sdk.sh ${TARGETARCH:-amd64}
+# Even though it is possible to tar the install directory for retrieving it later in runtime image,
+# the tar extraction in arm64 emulated on arm64 is still slow. So, we copy the install directory instead
 
-# this:
-# 1) builds the application
-# 2) packages the application as .deb & writes it to /main_ws/
-#
-# SKIP_BUILD_UNDERLAY_STEPS because otherwise build fails for some reason
-RUN SKIP_BUILD_UNDERLAY_STEPS=true /packaging/build.sh
+FROM ghcr.io/tiiuae/fog-ros-baseimage:v3.0.1
 
-#  ▲               runtime ──┐
-#  └── build                 ▼
+HEALTHCHECK --interval=5s \
+	CMD fog-health check --metric=rplidar_scan_count --diff-gte=1.0 \
+		--metrics-from=http://localhost:${METRICS_PORT}/metrics --only-if-nonempty=${METRICS_PORT}
 
-FROM ghcr.io/tiiuae/fog-ros-baseimage:v2.1.0
-
-ENTRYPOINT /entrypoint.sh
+# launch file checks env variables SIMULATION and DRONE_AIRFRAME
+# SIMULATION is by default 0. However, it can be set to 1
+# DRONE_AIRFRAME is by default "t-drone". However, it can be set to "holybro"
+ENTRYPOINT [ "/entrypoint.sh" ]
 
 COPY entrypoint.sh /entrypoint.sh
 
-COPY misc/libvtk9-qt-dev-hack_1.0_all.deb /tmp/libvtk9-qt-dev-hack_1.0_all.deb
+RUN apt update \
+    && apt install -y --no-install-recommends \
+        octomap-staticdev \
+        pcl-ros \
+        pcl-conversions \
+        pcl-msgs \
+        octomap-ros \
+        octomap-msgs \
+        laser-geometry \
+        boost \
+    && rm -rf /var/lib/apt/lists/*
 
-# prevent libpcl-dev from pulling in a full graphical environment.
-# produced with these instructions: https://askubuntu.com/a/656153
-RUN dpkg -i /tmp/libvtk9-qt-dev-hack_1.0_all.deb
+# WORKSPACE_DIR environment variable is defined in the fog-ros-baseimage.
+# The same installation directory is used by all ROS2 components.
+# See: https://github.com/tiiuae/fog-ros-baseimage/blob/main/Dockerfile
+WORKDIR $WORKSPACE_DIR
 
-COPY --from=builder /main_ws/ros-*-octomap-server2_*_amd64.deb /octomap-server.deb
-
-RUN apt update && apt install -y --no-install-recommends ./octomap-server.deb \
-	&& rm /octomap-server.deb
-
+COPY --from=builder $WORKSPACE_DIR/install install

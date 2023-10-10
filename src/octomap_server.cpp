@@ -138,6 +138,29 @@ OctomapServer::OctomapServer(rclcpp::NodeOptions options) : Node("octomap_server
 }
 //}
 
+void OctomapServer::transformAsMatrix(const tf2::Transform & bt, Eigen::Matrix4f & out_mat)
+{
+  double mv[12];
+  bt.getBasis().getOpenGLSubMatrix(mv);
+
+  tf2::Vector3 origin = bt.getOrigin();
+
+  out_mat(0, 0) = mv[0]; out_mat(0, 1) = mv[4]; out_mat(0, 2) = mv[8];
+  out_mat(1, 0) = mv[1]; out_mat(1, 1) = mv[5]; out_mat(1, 2) = mv[9];
+  out_mat(2, 0) = mv[2]; out_mat(2, 1) = mv[6]; out_mat(2, 2) = mv[10];
+
+  out_mat(3, 0) = out_mat(3, 1) = out_mat(3, 2) = 0; out_mat(3, 3) = 1;
+  out_mat(0, 3) = origin.x();
+  out_mat(1, 3) = origin.y();
+  out_mat(2, 3) = origin.z();
+}
+
+void OctomapServer::transformAsMatrix(const geometry_msgs::msg::TransformStamped & bt, Eigen::Matrix4f & out_mat)
+{
+  tf2::Transform transform;
+  tf2::convert(bt.transform, transform);
+  transformAsMatrix(transform, out_mat);
+}
 // | --------------------- topic callbacks -------------------- |
 
 /* callbackLaserScan() //{ */
@@ -162,9 +185,8 @@ void OctomapServer::callbackLaserScan(const sensor_msgs::msg::LaserScan::UniqueP
   }
 
   RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000, "[OctomapServer]: callbackLaserScan()");
-
-  PCLPointCloud::Ptr pc              = std::make_shared<PCLPointCloud>();
-  PCLPointCloud::Ptr free_vectors_pc = std::make_shared<PCLPointCloud>();
+  std::shared_ptr<PCLPointCloud> pc              = std::make_shared<PCLPointCloud>();
+  std::shared_ptr<PCLPointCloud> free_vectors_pc = std::make_shared<PCLPointCloud>();
 
   Eigen::Matrix4f                      sensorToWorld;
   geometry_msgs::msg::TransformStamped sensorToWorldTf;
@@ -188,7 +210,7 @@ void OctomapServer::callbackLaserScan(const sensor_msgs::msg::LaserScan::UniqueP
     return;
   }
 
-  pcl_ros::transformAsMatrix(sensorToWorldTf, sensorToWorld);
+  transformAsMatrix(sensorToWorldTf, sensorToWorld);
 
   // clamp ranges to parametrized values
   msg->range_max = std::min((double)msg->range_max, _rangeMax_);
@@ -485,7 +507,7 @@ void OctomapServer::timerLocalMapResizer() {
 /* insertPointCloud() //{ */
 
 void OctomapServer::insertPointCloud(const geometry_msgs::msg::Vector3& robotOriginTf, const geometry_msgs::msg::Vector3& sensorOriginTf, 
-                                     const PCLPointCloud::ConstPtr& cloud,const PCLPointCloud::ConstPtr& free_vectors_cloud) {
+                                     const std::shared_ptr<const PCLPointCloud>& cloud, const std::shared_ptr<const PCLPointCloud>& free_vectors_cloud) {
 
   std::scoped_lock lock(mutex_octree_local_);
   rclcpp::Time time_start = get_clock()->now();
