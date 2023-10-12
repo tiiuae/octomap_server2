@@ -40,6 +40,7 @@ find_package(tf2_ros REQUIRED)
 find_package(tf2_msgs REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(laser_geometry REQUIRED)
+find_package(prometheus-cpp CONFIG REQUIRED)
 
 find_package(Eigen3 REQUIRED)
 set(Eigen_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIRS})
@@ -84,7 +85,7 @@ ament_target_dependencies(octomap_server2
   laser_geometry
   )
 
-target_link_libraries(octomap_server2 ${EIGEN3_LIBRARIES} ${PCL_LIBRARIES} ${OCTOMAP_LIBRARIES})
+target_link_libraries(octomap_server2 ${EIGEN3_LIBRARIES} ${PCL_LIBRARIES} ${OCTOMAP_LIBRARIES} prometheus-cpp::pull)
 
 rclcpp_components_register_node(octomap_server2
   PLUGIN "octomap_server::OctomapServer"

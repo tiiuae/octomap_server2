@@ -16,7 +16,7 @@ RUN /packaging/build_colcon_sdk.sh ${TARGETARCH:-amd64}
 FROM ghcr.io/tiiuae/fog-ros-baseimage:v3.0.2
 
 HEALTHCHECK --interval=5s \
-	CMD fog-health check --metric=rplidar_scan_count --diff-gte=1.0 \
+	CMD fog-health check --metric=octomap_result_publish_count --diff-gte=1.0 \
 		--metrics-from=http://localhost:${METRICS_PORT}/metrics --only-if-nonempty=${METRICS_PORT}
 
 # launch file checks env variables SIMULATION and DRONE_AIRFRAME

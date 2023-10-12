@@ -131,6 +131,19 @@ OctomapServer::OctomapServer(rclcpp::NodeOptions options) : Node("octomap_server
   timer_local_map_publisher_ = create_wall_timer(std::chrono::duration<double>(1.0 / _local_map_publisher_rate_), std::bind(&OctomapServer::timerLocalMapPublisher, this), new_cbk_grp());
   timer_local_map_resizer_ = create_wall_timer(std::chrono::duration<double>(1.0), std::bind(&OctomapServer::timerLocalMapResizer, this), new_cbk_grp());
 
+   result_publish_count = &(prometheus::BuildCounter()
+      .Name("octomap_result_publish_count")
+      .Help("Number of results fused from lidar and location")
+      .Register(*metrics_registry).Add({}));
+
+   auto metrics_port = getenv("METRICS_PORT");
+   if (metrics_port != nullptr) // start HTTP endpoint only if requested
+   {
+      metrics_exposer = std::make_shared<prometheus::Exposer>("0.0.0.0:" + std::string(metrics_port));
+
+      metrics_exposer->RegisterCollectable(metrics_registry);
+   }
+
   is_initialized_ = true;
   RCLCPP_INFO(get_logger(), "[OctomapServer]: Initialized");
 
@@ -436,6 +449,15 @@ void OctomapServer::timerLocalMapPublisher() {
 
     if (success) {
       pub_map_local_binary_->publish(om);
+      // FIXME: it's difficult to know at which point we should increment this counter since this program has four outputs:
+      // - global binary
+      // - global full
+      // - local binary <-- we're here
+      // - local full
+      //
+      // I'm not sure if it makes sense to have metrics for all the outputs, so choosing this place
+      // as it's enabled in the default config and thus seems most reasonable.
+      result_publish_count->Increment(1);
     } else {
       RCLCPP_ERROR(get_logger(), "[OctomapServer]: error serializing local octomap to binary representation");
     }
