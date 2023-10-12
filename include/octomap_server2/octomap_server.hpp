@@ -69,6 +69,10 @@
 
 #include <laser_geometry/laser_geometry.hpp>
 
+#include <prometheus/counter.h>
+#include <prometheus/exposer.h>
+#include <prometheus/registry.h>
+
 #include "octomap_server2/octomap_server.hpp"
 
 #include <cmath>
@@ -136,6 +140,12 @@ private:
 
   rclcpp::Publisher<octomap_msgs::msg::Octomap>::SharedPtr pub_map_local_full_;
   rclcpp::Publisher<octomap_msgs::msg::Octomap>::SharedPtr pub_map_local_binary_;
+
+  // | -------------------- metrics -------------------- |
+
+  std::shared_ptr<prometheus::Registry> metrics_registry = std::make_shared<prometheus::Registry>();
+  std::shared_ptr<prometheus::Exposer> metrics_exposer;
+  prometheus::Counter* result_publish_count;
 
   // | -------------------- service serviers -------------------- |
 
