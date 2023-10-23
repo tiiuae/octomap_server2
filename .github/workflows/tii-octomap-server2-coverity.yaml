@@ -23,6 +23,9 @@ jobs:
           docker run --rm -e PROJECT_NAME=${{ github.event.repository.name }} -v "$(pwd):/main_ws/src" ghcr.io/tiiuae/fog-ros-baseimage-builder-coverity:sha-0f4f77f
       - name: Update summary
         run:
+          # jatka tästä:
+          pwd
+          ls -al
           cat cov-analyze-result.txt >> $GITHUB_STEP_SUMMARY
       - name: Upload coverity scan results
         uses: actions/upload-artifact@v3
