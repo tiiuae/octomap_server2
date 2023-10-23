@@ -19,10 +19,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Run coverity scan
-        run:
-          docker run --rm -e PROJECT_NAME=${{ github.event.repository.name }} -v "$(pwd):/main_ws/src" ghcr.io/tiiuae/fog-ros-baseimage-builder-coverity:sha-4a955df
+        run: |
+          docker run --rm \
+            -e PROJECT_NAME=${{ github.event.repository.name }} \
+            -v "$(pwd):/main_ws/src" \
+            ghcr.io/tiiuae/fog-ros-baseimage-builder-coverity:sha-4da4f0d
       - name: Update summary
-        run:
+        run: |
           cat cov-analyze-result.txt >> $GITHUB_STEP_SUMMARY
       - name: Upload coverity scan results
         uses: actions/upload-artifact@v3
