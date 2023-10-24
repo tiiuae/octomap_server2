@@ -23,7 +23,7 @@ jobs:
           docker run --rm \
             -e PROJECT_NAME=${{ github.event.repository.name }} \
             -v "$(pwd):/main_ws/src" \
-            ghcr.io/tiiuae/fog-ros-baseimage-builder-coverity:sha-49a2e8d
+            ghcr.io/tiiuae/fog-ros-baseimage-builder-coverity:sha-92a9f3a
       - name: Update summary
         run: |
           # jatka tästä:
